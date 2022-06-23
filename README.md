@@ -5,6 +5,6 @@ Contains two sources:
 
 Currently assumes that some flake named `self` is in the flake registry,
 and that this flake in turn outputs both `legacyPackages` and
-`nixosConfiguration.$hostname`.
+`nixosConfigurations.$hostname`.
 
 Depends on tree-sitter and https://github.com/nvim-treesitter/nvim-treesitter.
