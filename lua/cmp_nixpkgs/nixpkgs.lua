@@ -1,0 +1,97 @@
+-- DONE: pkgs.
+-- DONE: lib.
+-- DONE: self/super and final/prev
+-- TODO: overrideAttrs (foo: { bar = foo.bar + "baz"; })
+-- DONE: inherit (pkgs) foo;
+-- DONE: with pkgs; [ foo bar baz ];
+-- TODO: define proper keyword_pattern and remove '{[ ' from trigger_characters
+-- (or figure out why we get garbage results with only '.' and the current
+-- pattern)
+-- DONE: nested with-expressions
+-- TODO: tests
+-- TODO(maybe): rec {}, let in, and what have you
+-- D̶O̶N̶E̶:̶ ̶n̶i̶x̶o̶s̶ ̶m̶o̶d̶u̶l̶e̶s̶
+-- T̶O̶D̶O̶:̶ ̶n̶e̶s̶t̶e̶d̶ ̶n̶i̶x̶o̶s̶ ̶m̶o̶d̶u̶l̶e̶s̶:̶ ̶f̶o̶o̶ ̶=̶ ̶{̶ ̶b̶a̶r̶ ̶=̶ ̶{̶ ̶b̶a̶z̶
+-- D̶O̶N̶E̶:̶ ̶d̶i̶s̶a̶b̶l̶e̶ ̶n̶i̶x̶o̶s̶ ̶m̶o̶d̶u̶l̶e̶ ̶c̶o̶m̶p̶l̶e̶t̶i̶o̶n̶ ̶o̶u̶t̶s̶i̶d̶e̶ ̶o̶f̶ ̶r̶e̶s̶o̶l̶v̶e̶(̶'̶/̶e̶t̶c̶/̶n̶i̶x̶o̶s̶'̶)̶
+-- DONE: split nixos module completion into standalone source
+-- TODO(maybe): vim_item.kind
+-- TODO(maybe): vim_item.detail (docs)
+-- DONE: publish
+-- TODO(maybe): setup function:
+--  + configurable base# to prepend to token
+--  + enable/disable treesitter integration
+--  +̶ ̶e̶n̶a̶b̶l̶e̶/̶d̶i̶s̶a̶b̶l̶e̶ ̶n̶i̶x̶o̶s̶ ̶m̶o̶d̶u̶l̶e̶s̶ ̶c̶o̶m̶p̶l̶e̶t̶i̶o̶n̶
+--  TODO(probably not): support completing the ouput of any flake. This
+--  technically isn't actually that hard to do if we supply the required
+--  flake#prefix combo to the hypothetical setup function
+
+local nixpkgs = {}
+
+nixpkgs.new = function()
+  return setmetatable({}, { __index = nixpkgs })
+end
+
+nixpkgs.is_available = function()
+  return vim.bo.filetype == 'nix'
+end
+
+nixpkgs.get_debug_name = function()
+  return 'nixpkgs'
+end
+
+nixpkgs.get_keyword_pattern = function()
+  return [[\w\+]]
+end
+
+nixpkgs.get_trigger_characters = function()
+  return { '.', '(', '[', ' ' }
+end
+
+local function get_context(type, depth)
+  local node = require('nvim-treesitter.ts_utils').get_node_at_cursor()
+  if not node then return end
+  depth = depth or 1
+  local context = ''
+  while node do
+    if node:type() == type then
+      if depth > 0 then
+        depth = depth - 1
+        context = vim.treesitter.query.get_node_text(node:named_child(0), 0) .. '.' .. context
+      else
+        break
+      end
+    end
+    node = node:parent()
+  end
+  return context or ''
+end
+
+nixpkgs.complete = function(_, request, callback)
+  local tokens = vim.split(request.context.cursor_before_line, '%s+')
+  local last_token = tokens[#tokens]:gsub('^[%(%[{]+', '')
+  if not last_token:find('^pkgs%.') or last_token:find('^lib%.') then
+    last_token = get_context('with_expression', 4) .. get_context('inherit_from') .. last_token
+    for _, root in ipairs({ 'final', 'prev', 'self', 'super', }) do
+      last_token = last_token:gsub('^' .. root .. '%.', 'pkgs.')
+    end
+  end
+  if last_token:find('^pkgs%.') or last_token:find('^lib%.') then
+    vim.fn.jobstart({ 'nix', 'eval', 'self#' .. last_token }, {
+      clear_env = true,
+      env = { NIX_GET_COMPLETIONS = 2, },
+      stdout_buffered = true,
+      on_stdout = function(_, data)
+        if #data < 3 then return callback() end
+        local t = {}
+        for i = 2, #data - 1 do -- first and last elements are always "attrs" and ""
+          t[#t + 1] = { label = vim.trim(data[i]:sub(6 + #last_token)) }
+        end
+        return callback(t)
+      end
+    })
+  else
+    return callback()
+  end
+end
+
+require('cmp').register_source('nixpkgs', nixpkgs.new())
