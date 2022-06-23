@@ -1,8 +1,6 @@
--- DONE: nested modules: foo = { bar = { baz
--- TODO: tests for nested attributes
--- TODO(maybe): more appropriate completionKind for leaf attributes
--- TODO(maybe): vim_item.detail (docs)
--- TODO: tune context depth
+-- TODO: tests for treesitter context
+-- TODO(maybe): set appropriate completionKind for leaf attributes
+-- TODO(maybe): add docs to completion_item in nixos.resolve()
 
 local nixos = {}
 local hostname = vim.fn.hostname()

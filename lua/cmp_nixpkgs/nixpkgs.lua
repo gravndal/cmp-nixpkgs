@@ -1,29 +1,12 @@
--- DONE: pkgs.
--- DONE: lib.
--- DONE: self/super and final/prev
--- TODO: overrideAttrs (foo: { bar = foo.bar + "baz"; })
--- DONE: inherit (pkgs) foo;
--- DONE: with pkgs; [ foo bar baz ];
 -- TODO: define proper keyword_pattern and remove '{[ ' from trigger_characters
--- (or figure out why we get garbage results with only '.' and the current
--- pattern)
--- DONE: nested with-expressions
--- TODO: tests
+-- TODO: tests for treesitter context
+-- TODO(maybe): overrideAttrs (foo: { bar = foo.bar + "baz"; })
 -- TODO(maybe): rec {}, let in, and what have you
--- D̶O̶N̶E̶:̶ ̶n̶i̶x̶o̶s̶ ̶m̶o̶d̶u̶l̶e̶s̶
--- T̶O̶D̶O̶:̶ ̶n̶e̶s̶t̶e̶d̶ ̶n̶i̶x̶o̶s̶ ̶m̶o̶d̶u̶l̶e̶s̶:̶ ̶f̶o̶o̶ ̶=̶ ̶{̶ ̶b̶a̶r̶ ̶=̶ ̶{̶ ̶b̶a̶z̶
--- D̶O̶N̶E̶:̶ ̶d̶i̶s̶a̶b̶l̶e̶ ̶n̶i̶x̶o̶s̶ ̶m̶o̶d̶u̶l̶e̶ ̶c̶o̶m̶p̶l̶e̶t̶i̶o̶n̶ ̶o̶u̶t̶s̶i̶d̶e̶ ̶o̶f̶ ̶r̶e̶s̶o̶l̶v̶e̶(̶'̶/̶e̶t̶c̶/̶n̶i̶x̶o̶s̶'̶)̶
--- DONE: split nixos module completion into standalone source
--- TODO(maybe): vim_item.kind
--- TODO(maybe): vim_item.detail (docs)
--- DONE: publish
--- TODO(maybe): setup function:
---  + configurable base# to prepend to token
---  + enable/disable treesitter integration
---  +̶ ̶e̶n̶a̶b̶l̶e̶/̶d̶i̶s̶a̶b̶l̶e̶ ̶n̶i̶x̶o̶s̶ ̶m̶o̶d̶u̶l̶e̶s̶ ̶c̶o̶m̶p̶l̶e̶t̶i̶o̶n̶
---  TODO(probably not): support completing the ouput of any flake. This
---  technically isn't actually that hard to do if we supply the required
---  flake#prefix combo to the hypothetical setup function
+-- TODO(maybe): add docs to completion_item in nixpkgs.resolve()
+-- TODO(maybe): set appropriate completionKind
+-- TODO(probably not): support completing the ouput of any flake. This
+-- technically isn't actually that hard to do if we supply the required
+-- flake#prefix combo to the hypothetical setup function
 
 local nixpkgs = {}
 
