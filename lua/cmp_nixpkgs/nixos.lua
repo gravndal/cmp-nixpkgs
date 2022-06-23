@@ -31,7 +31,7 @@ end
 
 local function get_context()
   local node = require('nvim-treesitter.ts_utils').get_node_at_cursor()
-  if not node then return end
+  if not node then return '' end
   local depth = 5
   local context = ''
   while node do
