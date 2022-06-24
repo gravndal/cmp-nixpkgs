@@ -84,7 +84,7 @@ end
 
 nixpkgs.resolve = function(self, completion_item, callback)
   local meta = vim.fn.system({
-    'nix', 'eval', '--json', self.prefix .. completion_item.label .. '.meta'
+    'nix', 'eval', '--read-only', '--json', self.prefix .. completion_item.label .. '.meta'
   })
   if vim.v.shell_error == 0 then
     meta = vim.json.decode(meta)
