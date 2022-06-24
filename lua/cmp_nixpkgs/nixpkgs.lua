@@ -52,14 +52,19 @@ end
 nixpkgs.complete = function(_, request, callback)
   local tokens = vim.split(request.context.cursor_before_line, '%s+')
   local last_token = tokens[#tokens]:gsub('^[%(%[{]+', '')
+  local flake = 'self'
   if not last_token:find('^pkgs%.') or last_token:find('^lib%.') then
     last_token = get_context('with_expression', 4) .. get_context('inherit_from') .. last_token
     for _, root in ipairs({ 'final', 'prev', 'self', 'super', }) do
-      last_token = last_token:gsub('^' .. root .. '%.', 'pkgs.')
+      if vim.startswith(last_token, root) then
+        last_token = last_token:gsub('^' .. root .. '%.', 'pkgs.')
+        flake = (root == 'prev' or root == 'super') and 'nixpkgs' or flake
+        break
+      end
     end
   end
   if last_token:find('^pkgs%.') or last_token:find('^lib%.') then
-    vim.fn.jobstart({ 'nix', 'eval', 'self#' .. last_token }, {
+    vim.fn.jobstart({ 'nix', 'eval', flake .. '#' .. last_token }, {
       clear_env = true,
       env = { NIX_GET_COMPLETIONS = 2, },
       stdout_buffered = true,
@@ -67,7 +72,7 @@ nixpkgs.complete = function(_, request, callback)
         if #data < 3 then return callback() end
         local t = {}
         for i = 2, #data - 1 do -- first and last elements are always "attrs" and ""
-          t[#t + 1] = { label = vim.trim(data[i]:sub(6 + #last_token)) }
+          t[#t + 1] = { label = vim.trim(data[i]:sub(#flake + 2 + #last_token)) }
         end
         return callback(t)
       end
