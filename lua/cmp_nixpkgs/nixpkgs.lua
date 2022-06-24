@@ -64,6 +64,7 @@ nixpkgs.complete = function(_, request, callback)
     end
   end
   if last_token:find('^pkgs%.') or last_token:find('^lib%.') then
+    local prefixLen = #flake + 2 + #last_token:match('.*%.')
     vim.fn.jobstart({ 'nix', 'eval', flake .. '#' .. last_token }, {
       clear_env = true,
       env = { NIX_GET_COMPLETIONS = 2, },
@@ -72,7 +73,7 @@ nixpkgs.complete = function(_, request, callback)
         if #data < 3 then return callback() end
         local t = {}
         for i = 2, #data - 1 do -- first and last elements are always "attrs" and ""
-          t[#t + 1] = { label = vim.trim(data[i]:sub(#flake + 2 + #last_token)) }
+          t[#t + 1] = { label = vim.trim(data[i]:sub(prefixLen)) }
         end
         return callback(t)
       end
