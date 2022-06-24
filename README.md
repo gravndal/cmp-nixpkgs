@@ -4,11 +4,11 @@ Contains two sources:
 * `nixos` for nixos modules
 
 Currently assumes that two flakes named `self` and `nixpkgs` are in the flake
-registry, and that this flake in turn outputs both `legacyPackages` and
-`nixosConfigurations.$hostname`.
+registry, and that these flakes in turn outputs both `legacyPackages`
+and `nixosConfigurations.$hostname`.
 
 It's recommended to pin `nixpkgs` in your flake registry to avoid
-potentially slow lookup of suggestions for `prev` and `super`. See [1]
+potentially slow lookups of suggestions for `prev` and `super`. See [1]
 for a way to do so.
 
 NixOS module completion is only enabled for files under
