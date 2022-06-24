@@ -26,7 +26,7 @@ nixos.get_keyword_pattern = function()
 end
 
 nixos.get_trigger_characters = function()
-  return { '.', '{', ' ', }
+  return { '.' }
 end
 
 local function get_context()

@@ -1,4 +1,3 @@
--- TODO: define proper keyword_pattern and remove '{[ ' from trigger_characters
 -- TODO: tests for treesitter context
 -- TODO(maybe): overrideAttrs (foo: { bar = foo.bar + "baz"; })
 -- TODO(maybe): rec {}, let in, and what have you
@@ -27,7 +26,7 @@ nixpkgs.get_keyword_pattern = function()
 end
 
 nixpkgs.get_trigger_characters = function()
-  return { '.', '(', '[', ' ' }
+  return { '.' }
 end
 
 local function get_context(type, depth)
