@@ -106,7 +106,9 @@ nixpkgs.resolve = function(self, completion_item, callback)
     end
     completion_item.detail = table.concat(vim.tbl_filter(function(e) return e and e ~= '' end, t), '\n')
   elseif not meta:match([[^error: flake %S+ does not provide attribute]])
-      and not meta:match([[^error: %S+ is not an attribute set]]) then
+      and not meta:match([[^error: %S+ is not an attribute set]])
+      and not meta:match([[^error: cannot convert a function to JSON]])
+  then
     completion_item.detail = meta
   end
   return callback(completion_item)
