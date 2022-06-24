@@ -1,7 +1,6 @@
 -- TODO: tests for treesitter context
 -- TODO(maybe): overrideAttrs (foo: { bar = foo.bar + "baz"; })
 -- TODO(maybe): rec {}, let in, and what have you
--- TODO(maybe): add docs to completion_item in nixpkgs.resolve()
 -- TODO(maybe): set appropriate completionKind
 -- TODO(probably not): support completing the ouput of any flake. This
 -- technically isn't actually that hard to do if we supply the required
@@ -48,7 +47,7 @@ local function get_context(type, depth)
   return context or ''
 end
 
-nixpkgs.complete = function(_, request, callback)
+nixpkgs.complete = function(self, request, callback)
   local tokens = vim.split(request.context.cursor_before_line, '%s+')
   local last_token = tokens[#tokens]:gsub('^[%(%[{]+', '')
   local flake = 'self'
@@ -63,7 +62,8 @@ nixpkgs.complete = function(_, request, callback)
     end
   end
   if last_token:find('^pkgs%.') or last_token:find('^lib%.') then
-    local prefixLen = #flake + 2 + #last_token:match('.*%.')
+    self.prefix = flake .. '#' .. last_token:match('.*%.')
+    local prefixLen = #self.prefix + 1
     vim.fn.jobstart({ 'nix', 'eval', flake .. '#' .. last_token }, {
       clear_env = true,
       env = { NIX_GET_COMPLETIONS = 2, },
@@ -80,6 +80,33 @@ nixpkgs.complete = function(_, request, callback)
   else
     return callback()
   end
+end
+
+nixpkgs.resolve = function(self, completion_item, callback)
+  local meta = vim.fn.system({
+    'nix', 'eval', '--json', self.prefix .. completion_item.label .. '.meta'
+  })
+  if vim.v.shell_error == 0 then
+    meta = vim.json.decode(meta)
+    local t = {
+      meta.description and vim.trim(meta.description) .. '\n' or '',
+      meta.longDescription and vim.trim(meta.longDescription) .. '\n' or '',
+      meta.name and 'NAME: ' .. vim.trim(meta.name) or '',
+      meta.broken and 'NOTE: Marked as broken' or '',
+      meta.insecure and 'WARN: Marked as insecure' or '',
+    }
+    local licenses = meta.license and ({ meta.license.fullName } or vim.tbl_map(function(e)
+      return e.fullName
+    end, meta.license)) or {}
+    for _, l in ipairs(licenses) do
+      t[#t + 1] = 'LICENSE: ' .. l
+    end
+    completion_item.detail = table.concat(vim.tbl_filter(function(e) return e and e ~= '' end, t), '\n')
+  elseif not meta:match([[^error: flake %S+ does not provide attribute]])
+      and not meta:match([[^error: %S+ is not an attribute set]]) then
+    completion_item.detail = meta
+  end
+  return callback(completion_item)
 end
 
 require('cmp').register_source('nixpkgs', nixpkgs.new())
