@@ -32,18 +32,14 @@ end
 local function get_context()
   local node = require('nvim-treesitter.ts_utils').get_node_at_cursor()
   if not node then return '' end
-  local depth = 5
   local context = ''
   while node do
-    if depth > 0 then
-      depth = depth - 1
-      -- It looks like, based on a very casual look at the TSPlayground, that
-      -- relevant attrpaths are always the siblings of parent nodes when going
-      -- up the tree.
-      local sibling = node:prev_named_sibling()
-      if sibling and sibling:type() == 'attrpath' then
-        context = vim.treesitter.query.get_node_text(sibling, 0) .. '.' .. context
-      end
+    -- It looks like, based on a very casual look at the TSPlayground, that
+    -- relevant attrpaths are always the siblings of parent nodes when going
+    -- up the tree.
+    local sibling = node:prev_named_sibling()
+    if sibling and sibling:type() == 'attrpath' then
+      context = vim.treesitter.query.get_node_text(sibling, 0) .. '.' .. context
     end
     node = node:parent()
   end
