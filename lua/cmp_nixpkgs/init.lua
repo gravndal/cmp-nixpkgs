@@ -1,4 +1,3 @@
--- TODO: after/plugin abuse as is the norm for cmp sources
 -- TODO: setup function:
 --  + configurable flake name
 --  + enable/disable treesitter integration
