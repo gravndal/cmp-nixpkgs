@@ -83,6 +83,9 @@ nixpkgs.complete = function(self, request, callback)
 end
 
 nixpkgs.resolve = function(self, completion_item, callback)
+  if vim.startswith(self.prefix, 'self#lib.') or vim.startswith(self.prefix, 'self#pkgs.lib.') then
+    return callback(completion_item)
+  end
   local meta = vim.fn.system({
     'nix', 'eval', '--read-only', '--json', self.prefix .. completion_item.label .. '.meta'
   })
