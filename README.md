@@ -19,4 +19,4 @@ If `manix` is in `PATH`, then it will be used to resolve documentation for `lib`
 Depends on https://github.com/nvim-treesitter/nvim-treesitter.
 
 [^1]: More accurately `self#nixosConfigurations.$hostname.config`.
-[^overlay]: To take effect, this set before the `nixpkgs` source is initialised.
+[^overlay]: To take effect, this must be set before the `nixpkgs` source is initialised.
