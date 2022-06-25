@@ -18,4 +18,5 @@ to resolve documentation.
 Depends on tree-sitter and https://github.com/nvim-treesitter/nvim-treesitter.
 
 [1] https://discourse.nixos.org/t/my-painpoints-with-flakes/9750/14
+
 [2] More accurately `self#nixosConfigurations.$hostname.config`.
