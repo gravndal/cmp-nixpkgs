@@ -50,21 +50,21 @@ end
 nixpkgs.complete = function(self, request, callback)
   local tokens = vim.split(request.context.cursor_before_line, '%s+')
   local last_token = tokens[#tokens]:gsub('^[%(%[{]+', '')
-  local flake = 'self'
+  self.flake = 'self'
   if not last_token:find('^pkgs%.') or last_token:find('^lib%.') then
     last_token = get_context('with_expression', 4) .. get_context('inherit_from') .. last_token
     for _, root in ipairs({ 'final', 'prev', 'self', 'super', }) do
       if vim.startswith(last_token, root) then
         last_token = last_token:gsub('^' .. root .. '%.', 'pkgs.')
-        flake = (root == 'prev' or root == 'super') and 'nixpkgs' or flake
+        self.flake = (root == 'prev' or root == 'super') and 'nixpkgs' or self.flake
         break
       end
     end
   end
   if last_token:find('^pkgs%.') or last_token:find('^lib%.') then
-    self.prefix = flake .. '#' .. last_token:match('.*%.')
+    self.prefix = self.flake .. '#' .. last_token:match('.*%.')
     local prefixLen = #self.prefix + 1
-    vim.fn.jobstart({ 'nix', 'eval', flake .. '#' .. last_token }, {
+    vim.fn.jobstart({ 'nix', 'eval', self.flake .. '#' .. last_token }, {
       clear_env = true,
       env = { NIX_GET_COMPLETIONS = 2, },
       stdout_buffered = true,
@@ -83,7 +83,10 @@ nixpkgs.complete = function(self, request, callback)
 end
 
 nixpkgs.resolve = function(self, completion_item, callback)
-  if vim.startswith(self.prefix, 'self#lib.') or vim.startswith(self.prefix, 'self#pkgs.lib.') then
+  if vim.startswith(self.prefix, self.flake .. '#lib.')
+      or vim.startswith(self.prefix, self.flake .. '#pkgs.lib.')
+  then
+    -- TODO: docs for library functinos
     return callback(completion_item)
   end
   local meta = vim.fn.system({
