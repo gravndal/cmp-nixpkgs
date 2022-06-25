@@ -55,25 +55,10 @@ nixos.complete = function(self, request, callback)
   local last_token = self.context .. tokens[#tokens]:gsub('^[%(%[{]+', '')
   if last_token ~= '' then
     local prefixLen = #self.context + modulesPrefixLen
-    vim.fn.jobstart({
-      'nix', 'eval',
-      table.concat({ 'self#nixosConfigurations', hostname, 'config', last_token, }, '.')
-    }, {
-      clear_env = true,
-      env = { NIX_GET_COMPLETIONS = 2, },
-      stdout_buffered = true,
-      on_stdout = function(_, data)
-        if #data < 3 then return callback() end
-        local t = {}
-        for i = 2, #data - 1 do -- first and last elements are always "attrs" and ""
-          t[#t + 1] = {
-            label = vim.trim(data[i]:sub(prefixLen)),
-            kind = completionKind,
-          }
-        end
-        return callback(t)
-      end
-    })
+    require('cmp_nixpkgs.utils.nix').get_completions(
+      table.concat({ 'self#nixosConfigurations', hostname, 'config', last_token, }, '.'),
+      callback, prefixLen, completionKind
+    )
   else
     return callback()
   end
