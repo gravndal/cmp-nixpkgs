@@ -90,7 +90,7 @@ end
 
 nixos.resolve = function(self, completion_item, callback)
   if manixCached then
-    -- NOTE: This query wont provide docs for dependents of <name>-attributes.
+    -- NOTE: This query wont provide docs for descendants of <name>-attributes.
     local query = self.context .. completion_item.label
     if query:find('%.') then -- ignore top level attributes
       completion_item.detail = vim.fn.system({
