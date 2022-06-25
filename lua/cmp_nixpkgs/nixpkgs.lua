@@ -10,6 +10,7 @@ local cmp = require('cmp')
 
 local nixpkgs = {}
 local manix = require('cmp_nixpkgs.utils.manix')
+local overlay = vim.g.cmp_nixpkgs_overlay or vim.fn.resolve('/etc/nixos/') .. 'overlay'
 
 nixpkgs.new = function()
   return setmetatable({}, { __index = nixpkgs })
@@ -56,11 +57,13 @@ nixpkgs.complete = function(self, request, callback)
   self.flake = 'self'
   if not last_token:find('^pkgs%.') or last_token:find('^lib%.') then
     last_token = get_context('with_expression', 4) .. get_context('inherit_from') .. last_token
-    for _, root in ipairs({ 'final', 'prev', 'self', 'super', }) do
-      if vim.startswith(last_token, root) then
-        last_token = last_token:gsub('^' .. root .. '%.', 'pkgs.')
-        self.flake = (root == 'prev' or root == 'super') and 'nixpkgs' or self.flake
-        break
+    if vim.startswith(vim.api.nvim_buf_get_name(0), overlay) then
+      for _, root in ipairs({ 'final', 'prev', 'self', 'super', }) do
+        if vim.startswith(last_token, root) then
+          last_token = last_token:gsub('^' .. root .. '%.', 'pkgs.')
+          self.flake = (root == 'prev' or root == 'super') and 'nixpkgs' or self.flake
+          break
+        end
       end
     end
   end
