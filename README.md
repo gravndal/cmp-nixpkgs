@@ -1,22 +1,18 @@
 # cmp-nixpkgs
 Contains two sources:
-* `nixpkgs` for pkgs and lib.
-* `nixos` for nixos modules.
+* `nixpkgs` for `pkgs` and `lib`.
+* `nixos` for NixOS modules.
 
-Currently assumes that two flakes named `self` and `nixpkgs` are in the flake
-registry, and that these flakes in turn both output `legacyPackages`.
+The sources assume that there are two flakes named `self` and `nixpkgs` in the flake registry, and that these flakes in turn both output `legacyPackages`.
 
-It's recommended to pin `nixpkgs` in your flake registry to avoid potentially
-slow lookups of suggestions for `prev` and `super`. See [1] for a way to do so.
+It's recommended to pin `nixpkgs` in your flake registry to avoid potentially slow lookups of suggestions for `prev` and `super`.
+See [this post](https://discourse.nixos.org/t/my-painpoints-with-flakes/9750/14) on the discourse for a way to do so.
 
-NixOS module completion is only enabled for files under
-`vim.fn.resolve('/etc/nixos/')`. It suggests attributes paths found under
-`config`[2], this means that it will provide suggestions matching your
-currently running system. If you have `manix` in your `PATH`, it will be used
-to resolve documentation.
+NixOS module completion is only enabled for files under `resolve('/etc/nixos/')`.
+The suggestions are attribute paths found under `config`[^1], as a consequence, these suggestions will match your currently running system so long as `self` is properly pinned.
 
-Depends on tree-sitter and https://github.com/nvim-treesitter/nvim-treesitter.
+If `manix` is in `PATH`, then it will be used to resolve documentation for `lib` and NixOS modules.
 
-[1] https://discourse.nixos.org/t/my-painpoints-with-flakes/9750/14
+Depends on https://github.com/nvim-treesitter/nvim-treesitter.
 
-[2] More accurately `self#nixosConfigurations.$hostname.config`.
+[^1]: More accurately `self#nixosConfigurations.$hostname.config`.
