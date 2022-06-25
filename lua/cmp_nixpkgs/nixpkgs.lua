@@ -114,6 +114,7 @@ nixpkgs.resolve = function(self, completion_item, callback)
   then
     completion_item.detail = meta
   end
+  -- TODO: manix fallback?
   return callback(completion_item)
 end
 

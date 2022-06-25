@@ -1,12 +1,25 @@
--- TODO: tests for treesitter context
--- TODO(maybe): set appropriate completionKind for leaf attributes
--- TODO(maybe): add docs to completion_item in nixos.resolve()
+-- TODO: Tests for treesitter context.
+-- TODO: Optionally disable docs.
+-- TODO(maybe): Set appropriate completionKind for leaf attributes.
 
 local nixos = {}
 local hostname = vim.fn.hostname()
 local modulesPrefixLen = 34 + hostname:len()
 local nixosConfigPath = vim.fn.resolve('/etc/nixos/')
 local completionKind = require('cmp.types.lsp').CompletionItemKind.Module
+local manixCached = false
+
+if vim.fn.executable('manix') then
+  vim.fn.jobstart({
+    'manix', 'programs.less', '--source', 'nixos_options',
+  }, {
+    on_exit = function()
+      if vim.v.shell_error == 0 then
+        manixCached = true
+      end
+    end
+  })
+end
 
 nixos.new = function()
   return setmetatable({}, { __index = nixos })
@@ -46,10 +59,10 @@ local function get_context()
   return context or ''
 end
 
-nixos.complete = function(_, request, callback)
+nixos.complete = function(self, request, callback)
   local tokens = vim.split(request.context.cursor_before_line, '%s+')
-  local context = get_context()
-  local last_token = context .. tokens[#tokens]:gsub('^[%(%[{]+', '')
+  self.context = get_context()
+  local last_token = self.context .. tokens[#tokens]:gsub('^[%(%[{]+', '')
   if last_token ~= '' then
     vim.fn.jobstart({
       'nix', 'eval',
@@ -63,7 +76,7 @@ nixos.complete = function(_, request, callback)
         local t = {}
         for i = 2, #data - 1 do -- first and last elements are always "attrs" and ""
           t[#t + 1] = {
-            label = vim.trim(data[i]:sub(#context + modulesPrefixLen)),
+            label = vim.trim(data[i]:sub(#self.context + modulesPrefixLen)),
             kind = completionKind,
           }
         end
@@ -73,6 +86,36 @@ nixos.complete = function(_, request, callback)
   else
     return callback()
   end
+end
+
+nixos.resolve = function(self, completion_item, callback)
+  if manixCached then
+    -- NOTE: This query wont provide docs for dependents of <name>-attributes.
+    local query = self.context .. completion_item.label
+    if query:find('%.') then -- ignore top level attributes
+      completion_item.detail = vim.fn.system({
+        'manix', '-s', query, '--source', 'nixos_options',
+      })
+
+      -- TODO: Optionally only show documentation for leaf attributes.
+      --
+      -- Asking for completions for child attributes can be used as a heuristic
+      -- if we also have a special allowance for `package`-attributes which are
+      -- typically derivations.
+      --
+      -- if #vim.fn.system({
+      --   'env', '-i', 'NIX_GET_COMPLETIONS=2', 'nix', 'eval',
+      --   table.concat(
+      --     { 'self#nixosConfigurations', hostname, 'config', query, '' }, '.'
+      --   )
+      -- }) == 6 or vim.endswith(query, 'package') then
+      --   completion_item.detail = vim.fn.system({
+      --     'manix', '-s', query, '--source', 'nixos_options',
+      --   }):gsub('^NixOS Options\n.-\n.-\n', '')
+      -- end
+    end
+  end
+  callback(completion_item)
 end
 
 require('cmp').register_source('nixos', nixos.new())
