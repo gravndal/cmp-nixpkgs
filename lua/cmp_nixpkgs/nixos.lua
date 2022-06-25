@@ -2,11 +2,13 @@
 -- TODO: Optionally disable docs.
 -- TODO(maybe): Set appropriate completionKind for leaf attributes.
 
+local cmp = require('cmp')
+local completionKind = require('cmp.types.lsp').CompletionItemKind.Module
+
 local nixos = {}
 local hostname = vim.fn.hostname()
 local modulesPrefixLen = 34 + hostname:len()
 local nixosConfigPath = vim.fn.resolve('/etc/nixos/')
-local completionKind = require('cmp.types.lsp').CompletionItemKind.Module
 local manixCached = false
 
 if vim.fn.executable('manix') then
@@ -89,6 +91,7 @@ nixos.complete = function(self, request, callback)
 end
 
 nixos.resolve = function(self, completion_item, callback)
+  if not cmp.get_active_entry() then return callback(completion_item) end
   if manixCached then
     -- NOTE: This query wont provide docs for descendants of <name>-attributes.
     local query = self.context .. completion_item.label
@@ -118,4 +121,4 @@ nixos.resolve = function(self, completion_item, callback)
   callback(completion_item)
 end
 
-require('cmp').register_source('nixos', nixos.new())
+cmp.register_source('nixos', nixos.new())

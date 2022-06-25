@@ -6,6 +6,8 @@
 -- technically isn't actually that hard to do if we supply the required
 -- flake#prefix combo to the hypothetical setup function
 
+local cmp = require('cmp')
+
 local nixpkgs = {}
 
 nixpkgs.new = function()
@@ -83,6 +85,7 @@ nixpkgs.complete = function(self, request, callback)
 end
 
 nixpkgs.resolve = function(self, completion_item, callback)
+  if not cmp.get_active_entry() then return callback(completion_item) end
   if vim.startswith(self.prefix, self.flake .. '#lib.')
       or vim.startswith(self.prefix, self.flake .. '#pkgs.lib.')
   then
@@ -118,4 +121,4 @@ nixpkgs.resolve = function(self, completion_item, callback)
   return callback(completion_item)
 end
 
-require('cmp').register_source('nixpkgs', nixpkgs.new())
+cmp.register_source('nixpkgs', nixpkgs.new())
