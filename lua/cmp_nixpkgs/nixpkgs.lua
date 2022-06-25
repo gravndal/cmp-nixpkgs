@@ -9,6 +9,7 @@
 local cmp = require('cmp')
 
 local nixpkgs = {}
+local manix = require('cmp_nixpkgs.utils.manix')
 
 nixpkgs.new = function()
   return setmetatable({}, { __index = nixpkgs })
@@ -89,7 +90,10 @@ nixpkgs.resolve = function(self, completion_item, callback)
   if vim.startswith(self.prefix, self.flake .. '#lib.')
       or vim.startswith(self.prefix, self.flake .. '#pkgs.lib.')
   then
-    -- TODO: docs for library functinos
+    if manix.cached() then
+      local query = self.prefix:gsub('.*lib%.', '') .. completion_item.label
+      completion_item.detail = manix.query(query, 'nixpkgs_comments')
+    end
     return callback(completion_item)
   end
   local meta = vim.fn.system({

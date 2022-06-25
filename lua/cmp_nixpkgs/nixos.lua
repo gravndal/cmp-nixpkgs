@@ -9,19 +9,7 @@ local nixos = {}
 local hostname = vim.fn.hostname()
 local modulesPrefixLen = 34 + hostname:len()
 local nixosConfigPath = vim.fn.resolve('/etc/nixos/')
-local manixCached = false
-
-if vim.fn.executable('manix') then
-  vim.fn.jobstart({
-    'manix', 'programs.less', '--source', 'nixos_options',
-  }, {
-    on_exit = function()
-      if vim.v.shell_error == 0 then
-        manixCached = true
-      end
-    end
-  })
-end
+local manix = require('cmp_nixpkgs.utils.manix')
 
 nixos.new = function()
   return setmetatable({}, { __index = nixos })
@@ -93,14 +81,11 @@ end
 
 nixos.resolve = function(self, completion_item, callback)
   if not cmp.get_active_entry() then return callback(completion_item) end
-  if manixCached then
+  if manix.cached() then
     -- NOTE: This query wont provide docs for descendants of <name>-attributes.
     local query = self.context .. completion_item.label
     if query:find('%.') then -- ignore top level attributes
-      completion_item.detail = vim.fn.system({
-        'manix', '-s', query, '--source', 'nixos_options',
-      })
-
+      completion_item.detail = manix.query(query, 'nixos_options')
       -- TODO: Optionally only show documentation for leaf attributes.
       --
       -- Asking for completions for child attributes can be used as a heuristic
