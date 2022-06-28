@@ -1,6 +1,6 @@
 # cmp-nixpkgs
 Contains two sources:
-* `nixpkgs` for `pkgs` and `lib`.
+* `nixpkgs` for `pkgs`, `lib`, and `config`.
 * `nixos` for NixOS modules.
 
 The sources assume that there are two flakes named `self` and `nixpkgs` in the flake registry, and that these flakes in turn both output `legacyPackages`.
@@ -12,7 +12,7 @@ By default, completion for `final/prev` and `self/super` is only enabled in buff
 This is configurable through `g:cmp_nixpkgs_overlay`.[^overlay]
 
 NixOS module completion is only enabled for files under `resolve('/etc/nixos/')`.
-The suggestions are attribute paths found under `config`[^1], as a consequence, these suggestions will match your currently running system so long as `self` is properly pinned.
+The suggestions are attribute paths found under `config`[^1], as a consequence, these suggestions will match your currently running system so long as `self` is properly pinned.[^howisthisdifferentfromnixpkgsconfig]
 
 If `manix` is in `PATH`, then it will be used to resolve documentation for `lib` and NixOS modules.
 
@@ -20,3 +20,4 @@ Depends on https://github.com/nvim-treesitter/nvim-treesitter.
 
 [^1]: More accurately `self#nixosConfigurations.$hostname.config`.
 [^overlay]: To take effect, this must be set before the `nixpkgs` source is initialised.
+[^howisthisdifferentfromnixpkgsconfig]: There is some overlap between the `nixos` source and the `config` completion from `nixpkgs`, however there is a significant difference in that the two sources don't use the same tree-sitter context.

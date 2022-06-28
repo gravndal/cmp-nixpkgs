@@ -9,7 +9,10 @@
 local cmp = require('cmp')
 
 local nixpkgs = {}
+local hostname = vim.fn.hostname()
+local configPrefix = 'self#nixosConfigurations.' .. hostname .. '.'
 local manix = require('cmp_nixpkgs.utils.manix')
+local nix = require('cmp_nixpkgs.utils.nix')
 local overlay = vim.g.cmp_nixpkgs_overlay or vim.fn.resolve('/etc/nixos/') .. 'overlay'
 
 nixpkgs.new = function()
@@ -55,7 +58,7 @@ nixpkgs.complete = function(self, request, callback)
   local tokens = vim.split(request.context.cursor_before_line, '%s+')
   local last_token = tokens[#tokens]:gsub('^[%(%[{]+', '')
   self.flake = 'self'
-  if not last_token:find('^pkgs%.') or last_token:find('^lib%.') then
+  if not last_token:find('^pkgs%.') or last_token:find('^lib%.') or last_token:find('^config%.') then
     last_token = get_context('with_expression', 4) .. get_context('inherit_from') .. last_token
     if vim.startswith(vim.api.nvim_buf_get_name(0), overlay) then
       for _, root in ipairs({ 'final', 'prev', 'self', 'super', }) do
@@ -70,8 +73,15 @@ nixpkgs.complete = function(self, request, callback)
   if last_token:find('^pkgs%.') or last_token:find('^lib%.') then
     self.prefix = self.flake .. '#' .. last_token:match('.*%.')
     local prefixLen = #self.prefix + 1
-    require('cmp_nixpkgs.utils.nix').get_completions(
+    nix.get_completions(
       self.flake .. '#' .. last_token,
+      callback, prefixLen
+    )
+  elseif last_token:find('^config%.') then
+    self.prefix = configPrefix .. last_token:match('.*%.')
+    local prefixLen = #self.prefix + 1
+    nix.get_completions(
+      configPrefix ..  last_token,
       callback, prefixLen
     )
   else
