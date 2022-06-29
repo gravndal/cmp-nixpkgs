@@ -32,11 +32,12 @@ nixos.get_trigger_characters = function()
   return { '.' }
 end
 
-local function get_context()
+local function get_context(abort)
   local node = require('nvim-treesitter.ts_utils').get_node_at_cursor()
   if not node then return '' end
   local context = ''
   while node do
+    if abort and node:type() == abort then break end
     -- It looks like, based on a very casual look at the TSPlayground, that
     -- relevant attrpaths are always the siblings of parent nodes when going
     -- up the tree.
@@ -51,7 +52,11 @@ end
 
 nixos.complete = function(self, request, callback)
   local tokens = vim.split(request.context.cursor_before_line, '%s+')
-  self.context = get_context()
+  if vim.fn.expand('%:t') == 'flake.nix' then
+    self.context = get_context('function_expression')
+  else
+    self.context = get_context()
+  end
   local last_token = (self.context .. tokens[#tokens]:gsub('^[%(%[{]+', ''))
   local prefixLen = #self.context + modulesPrefixLen
   require('cmp_nixpkgs.utils.nix').get_completions(
