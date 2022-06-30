@@ -1,6 +1,6 @@
 local manixCached = false
 
-if vim.fn.executable('manix') then
+if vim.fn.executable('manix') ~= 0 then
   vim.fn.jobstart({
     'manix', 'programs.less', '--source', 'nixos_options',
   }, {
