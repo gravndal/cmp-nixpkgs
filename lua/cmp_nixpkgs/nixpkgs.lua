@@ -75,14 +75,18 @@ nixpkgs.complete = function(self, request, callback)
     local prefixLen = #self.prefix + 1
     nix.get_completions(
       self.flake .. '#' .. last_token,
-      callback, prefixLen
+      callback,
+      prefixLen,
+      { cmp = { kind_text = 'Attr' } }
     )
   elseif last_token:find('^config%.') then
     self.prefix = configPrefix .. last_token:match('.*%.')
     local prefixLen = #self.prefix + 1
     nix.get_completions(
-      configPrefix ..  last_token,
-      callback, prefixLen
+      configPrefix .. last_token,
+      callback,
+      prefixLen,
+      { cmp = { kind_text = 'Attr' } }
     )
   else
     return callback()

@@ -61,7 +61,7 @@ nixos.complete = function(self, request, callback)
   local prefixLen = #self.context + modulesPrefixLen
   require('cmp_nixpkgs.utils.nix').get_completions(
     table.concat({ 'self#nixosConfigurations', hostname, 'config', last_token, }, '.'),
-    callback, prefixLen, completionKind
+    callback, prefixLen, { kind = completionKind }
   )
 end
 
