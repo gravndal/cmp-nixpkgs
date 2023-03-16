@@ -67,11 +67,11 @@ end
 
 nixos.resolve = function(self, completion_item, callback)
   if not cmp.get_active_entry() then return callback(completion_item) end
-  if manix.cached() then
+  if manix.query then
     -- NOTE: This query wont provide docs for descendants of <name>-attributes.
     local query = self.context .. completion_item.label
     if query:find('%.') then -- ignore top level attributes
-      completion_item.detail = manix.query(query, 'nixos_options')
+      return manix.query(query, 'nixos_options', completion_item, callback)
       -- TODO: Optionally only show documentation for leaf attributes.
       --
       -- Asking for completions for child attributes can be used as a heuristic

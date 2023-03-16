@@ -98,9 +98,9 @@ nixpkgs.resolve = function(self, completion_item, callback)
   if vim.startswith(self.prefix, self.flake .. '#lib.')
       or vim.startswith(self.prefix, self.flake .. '#pkgs.lib.')
   then
-    if manix.cached() then
+    if manix.query then
       local query = self.prefix:gsub('.*lib%.', '') .. completion_item.label
-      completion_item.detail = manix.query(query, 'nixpkgs_comments')
+      return manix.query(query, 'nixpkgs_comments', completion_item, callback)
     end
     return callback(completion_item)
   end
