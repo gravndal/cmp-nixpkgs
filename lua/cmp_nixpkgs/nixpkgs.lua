@@ -95,8 +95,10 @@ end
 
 nixpkgs.resolve = function(self, completion_item, callback)
   if not cmp.get_active_entry() then return callback(completion_item) end
-  if vim.startswith(self.prefix, self.flake .. '#lib.')
-      or vim.startswith(self.prefix, self.flake .. '#pkgs.lib.')
+
+  if
+    vim.startswith(self.prefix, self.flake .. '#lib.')
+    or vim.startswith(self.prefix, self.flake .. '#pkgs.lib.')
   then
     if manix.query then
       local query = self.prefix:gsub('.*lib%.', '') .. completion_item.label
@@ -104,33 +106,12 @@ nixpkgs.resolve = function(self, completion_item, callback)
     end
     return callback(completion_item)
   end
-  local meta = vim.fn.system({
-    'nix', 'eval', '--read-only', '--json', self.prefix .. completion_item.label .. '.meta'
-  })
-  if vim.v.shell_error == 0 then
-    meta = vim.json.decode(meta)
-    local t = {
-      meta.description and vim.trim(meta.description) .. '\n' or '',
-      meta.longDescription and vim.trim(meta.longDescription) .. '\n' or '',
-      meta.name and 'NAME: ' .. vim.trim(meta.name) or '',
-      meta.broken and 'NOTE: Marked as broken' or '',
-      meta.insecure and 'WARN: Marked as insecure' or '',
-    }
-    local licenses = meta.license and ({ meta.license.fullName } or vim.tbl_map(function(e)
-      return e.fullName
-    end, meta.license)) or {}
-    for _, l in ipairs(licenses) do
-      t[#t + 1] = 'LICENSE: ' .. l
-    end
-    completion_item.detail = table.concat(vim.tbl_filter(function(e) return e and e ~= '' end, t), '\n')
-  elseif not meta:match([[^error: flake %S+ does not provide attribute]])
-      and not meta:match([[^error: %S+ is not an attribute set]])
-      and not meta:match([[^error: cannot convert a function to JSON]])
-  then
-    completion_item.detail = meta
-  end
-  -- TODO: manix fallback?
-  return callback(completion_item)
+
+  nix.get_metadata(
+    self.prefix .. completion_item.label,
+    completion_item,
+    callback
+  )
 end
 
 cmp.register_source('nixpkgs', nixpkgs.new())
