@@ -13,7 +13,8 @@ local hostname = vim.fn.hostname()
 local configPrefix = 'self#nixosConfigurations.' .. hostname .. '.'
 local manix = require('cmp_nixpkgs.utils.manix')
 local nix = require('cmp_nixpkgs.utils.nix')
-local overlay = vim.g.cmp_nixpkgs_overlay or vim.fn.resolve('/etc/nixos/') .. 'overlay'
+local overlay = vim.g.cmp_nixpkgs_overlay
+  or vim.fn.resolve('/etc/nixos/') .. 'overlay'
 
 nixpkgs.new = function()
   return setmetatable({}, { __index = nixpkgs })
@@ -44,7 +45,9 @@ local function get_context(type, depth)
     if node:type() == type then
       if depth > 0 then
         depth = depth - 1
-        context = vim.treesitter.query.get_node_text(node:named_child(0), 0) .. '.' .. context
+        context = vim.treesitter.query.get_node_text(node:named_child(0), 0)
+          .. '.'
+          .. context
       else
         break
       end
@@ -58,13 +61,20 @@ nixpkgs.complete = function(self, request, callback)
   local tokens = vim.split(request.context.cursor_before_line, '%s+')
   local last_token = tokens[#tokens]:gsub('^[%(%[{]+', '')
   self.flake = 'self'
-  if not last_token:find('^pkgs%.') or last_token:find('^lib%.') or last_token:find('^config%.') then
-    last_token = get_context('with_expression', 4) .. get_context('inherit_from') .. last_token
+  if
+    not last_token:find('^pkgs%.')
+    or last_token:find('^lib%.')
+    or last_token:find('^config%.')
+  then
+    last_token = get_context('with_expression', 4)
+      .. get_context('inherit_from')
+      .. last_token
     if vim.startswith(vim.api.nvim_buf_get_name(0), overlay) then
-      for _, root in ipairs({ 'final', 'prev', 'self', 'super', }) do
+      for _, root in ipairs({ 'final', 'prev', 'self', 'super' }) do
         if vim.startswith(last_token, root) then
           last_token = last_token:gsub('^' .. root .. '%.', 'pkgs.')
-          self.flake = (root == 'prev' or root == 'super') and 'nixpkgs' or self.flake
+          self.flake = (root == 'prev' or root == 'super') and 'nixpkgs'
+            or self.flake
           break
         end
       end
