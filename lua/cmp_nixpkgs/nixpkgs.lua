@@ -1,10 +1,7 @@
 -- TODO: tests for treesitter context
 -- TODO(maybe): overrideAttrs (foo: { bar = foo.bar + "baz"; })
 -- TODO(maybe): rec {}, let in, and what have you
--- TODO(maybe): set appropriate completionKind
--- TODO(probably not): support completing the ouput of any flake. This
--- technically isn't actually that hard to do if we supply the required
--- flake#prefix combo to the hypothetical setup function
+-- TODO(probably not): support completing the ouput of any flake
 
 local cmp = require('cmp')
 
