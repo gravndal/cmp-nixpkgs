@@ -1,10 +1,8 @@
 local M = {}
 local completionKind = require('cmp.types.lsp').CompletionItemKind.Text
-local jobid
 
 M.get_completions = function(query, callback, trunc, opts)
-  vim.fn.jobwait({ jobid })
-  jobid = vim.fn.jobstart({ 'nix', 'eval', '--read-only', query }, {
+  vim.fn.jobstart({ 'nix', 'eval', '--read-only', query }, {
     clear_env = true,
     env = { NIX_GET_COMPLETIONS = 3 },
     stdout_buffered = true,
@@ -24,8 +22,7 @@ M.get_completions = function(query, callback, trunc, opts)
 end
 
 M.get_metadata = function(query, completion_item, callback)
-  vim.fn.jobwait({ jobid })
-  jobid = vim.fn.jobstart({
+  vim.fn.jobstart({
     'nix',
     'eval',
     '--read-only',
@@ -65,6 +62,9 @@ M.get_metadata = function(query, completion_item, callback)
     end,
 
     on_stderr = function(_, meta)
+      meta = vim.tbl_filter(function(err)
+        return not err:match([[^error %(ignored%)]])
+      end, meta)
       meta = table.concat(meta, '\n')
       if #meta == 0 then return end
 
