@@ -58,7 +58,10 @@ M.get_metadata = function(query, completion_item, callback)
         end, t),
         '\n'
       )
-      return callback(completion_item)
+      if callback then
+        callback(completion_item)
+        callback = nil
+      end
     end,
 
     on_stderr = function(_, meta)
@@ -75,7 +78,14 @@ M.get_metadata = function(query, completion_item, callback)
       then
         completion_item.detail = meta
       end
-      return callback(completion_item)
+      if callback then
+        callback(completion_item)
+        callback = nil
+      end
+    end,
+
+    on_exit = function()
+      if callback then callback(completion_item) end
     end,
   })
 end
