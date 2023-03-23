@@ -14,7 +14,7 @@ if vim.fn.executable('manix') ~= 0 and vim.fn.executable('pwait') ~= 0 then
 
     -- try to avoid running multiple instances of manix at once as generating
     -- the cache is quite expensive
-    vim.fn.jobstart({ 'pwait', 'manix' }, {
+    vim.fn.jobstart({ 'pwait', '--exact', 'manix' }, {
       on_exit = function()
         -- if we've just spent however many seconds waiting for manix and the
         -- completion menu is already closed, return early
