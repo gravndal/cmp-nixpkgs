@@ -42,7 +42,7 @@ local function get_context(type, depth)
     if node:type() == type then
       if depth > 0 then
         depth = depth - 1
-        context = vim.treesitter.query.get_node_text(node:named_child(0), 0)
+        context = vim.treesitter.get_node_text(node:named_child(0), 0)
           .. '.'
           .. context
       else

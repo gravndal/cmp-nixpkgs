@@ -43,7 +43,7 @@ local function get_context(abort)
     -- up the tree.
     local sibling = node:prev_named_sibling()
     if sibling and sibling:type() == 'attrpath' then
-      context = vim.treesitter.query.get_node_text(sibling, 0) .. '.' .. context
+      context = vim.treesitter.get_node_text(sibling, 0) .. '.' .. context
     end
     node = node:parent()
   end
