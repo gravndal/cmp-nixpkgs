@@ -3,7 +3,6 @@ local completionKind = require('cmp.types.lsp').CompletionItemKind.Text
 
 M.get_completions = function(query, callback, trunc, opts)
   vim.fn.jobstart({ 'nix', 'eval', '--read-only', query }, {
-    clear_env = true,
     env = { NIX_GET_COMPLETIONS = 3 },
     stdout_buffered = true,
     on_stdout = function(_, data)
@@ -29,7 +28,6 @@ M.get_metadata = function(query, completion_item, callback)
     '--json',
     query .. '.meta',
   }, {
-    clear_env = true,
     stdout_buffered = true,
     stderr_buffered = true,
 

@@ -26,7 +26,6 @@ if vim.fn.executable('manix') ~= 0 and vim.fn.executable('pwait') ~= 0 then
         source and { 'manix', '-s', query, '--source', source }
           or { 'manix', '-s', query },
         {
-          clear_env = true,
           stdout_buffered = true,
           on_stdout = function(_, data)
             completion_item.detail = table.concat(data, '\n')
