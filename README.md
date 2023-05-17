@@ -1,4 +1,8 @@
 # cmp-nixpkgs
+
+Consider using https://github.com/oxalica/nil instead.
+However, do note that it is not yet a complete replacement (2023-05-17).
+
 Contains two sources:
 * `nixpkgs` for `pkgs`, `lib`, and `config`.
 * `nixos` for NixOS modules.
