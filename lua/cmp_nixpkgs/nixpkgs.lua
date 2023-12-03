@@ -12,6 +12,7 @@ local manix = require('cmp_nixpkgs.utils.manix')
 local nix = require('cmp_nixpkgs.utils.nix')
 local overlay = vim.g.cmp_nixpkgs_overlay
   or vim.fn.resolve('/etc/nixos/') .. 'overlay'
+local doConfig = not vim.g.cmp_nixpkgs_disable_config
 
 nixpkgs.new = function()
   return setmetatable({}, { __index = nixpkgs })
@@ -62,7 +63,7 @@ nixpkgs.complete = function(self, request, callback)
     not (
       last_token:find('^pkgs%.')
       or last_token:find('^lib%.')
-      or last_token:find('^config%.')
+      or (doConfig and last_token:find('^config%.'))
     )
   then
     last_token = get_context('with_expression', 4)
@@ -88,7 +89,7 @@ nixpkgs.complete = function(self, request, callback)
       prefixLen,
       { cmp = { kind_text = 'Attr' } }
     )
-  elseif last_token:find('^config%.') then
+  elseif doConfig and last_token:find('^config%.') then
     self.prefix = configPrefix .. last_token:match('.*%.')
     local prefixLen = #self.prefix + 1
     nix.get_completions(
