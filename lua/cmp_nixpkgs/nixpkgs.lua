@@ -59,9 +59,11 @@ nixpkgs.complete = function(self, request, callback)
   local last_token = tokens[#tokens]:gsub('^[%(%[{]+', '')
   self.flake = 'self'
   if
-    not last_token:find('^pkgs%.')
-    or last_token:find('^lib%.')
-    or last_token:find('^config%.')
+    not (
+      last_token:find('^pkgs%.')
+      or last_token:find('^lib%.')
+      or last_token:find('^config%.')
+    )
   then
     last_token = get_context('with_expression', 4)
       .. get_context('inherit_from')
