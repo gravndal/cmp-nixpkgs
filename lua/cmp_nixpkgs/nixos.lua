@@ -1,4 +1,3 @@
--- TODO: Tests for treesitter context.
 -- TODO: Optionally disable docs.
 -- TODO(maybe): Set appropriate completionKind for leaf attributes.
 

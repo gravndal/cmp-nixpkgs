@@ -1,8 +1,3 @@
--- TODO: tests for treesitter context
--- TODO(maybe): overrideAttrs (foo: { bar = foo.bar + "baz"; })
--- TODO(maybe): rec {}, let in, and what have you
--- TODO(probably not): support completing the ouput of any flake
-
 local cmp = require('cmp')
 
 local nixpkgs = {}
