@@ -16,7 +16,7 @@ end
 
 nixos.is_available = function()
   return vim.bo.filetype == 'nix'
-      and vim.startswith(vim.fn.resolve(vim.fn.expand('%:p')), nixosConfigPath)
+    and vim.startswith(vim.fn.resolve(vim.fn.expand('%:p')), nixosConfigPath)
 end
 
 nixos.get_debug_name = function()
