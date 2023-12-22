@@ -66,12 +66,12 @@ M.get_metadata = function(query, completion_item, callback)
       local function parse(license)
         if license.fullName then
           return table.insert(t, 'LICENSE: ' .. license.fullName)
-        end
-        if type(license[1]) == 'string' then
+        elseif type(license) == 'string' or type(license[1]) == 'string' then
           return table.insert(t, 'LICENSE: ' .. vim.inspect(license))
-        end
-        for _, l in ipairs(license) do
-          parse(l)
+        elseif type(license) == 'table' then
+          for _, l in ipairs(license) do
+            parse(l)
+          end
         end
       end
       parse(out.license)
