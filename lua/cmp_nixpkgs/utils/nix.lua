@@ -2,22 +2,27 @@ local M = {}
 local completionKind = require('cmp.types.lsp').CompletionItemKind.Text
 
 M.get_completions = function(query, callback, trunc, opts)
-  vim.fn.jobstart({ 'nix', 'eval', '--read-only', query }, {
+  vim.system({ 'nix', 'eval', '--read-only', query }, {
     env = { NIX_GET_COMPLETIONS = 3 },
-    stdout_buffered = true,
-    on_stdout = function(_, data)
-      if #data < 3 then return callback() end
-      local t = {}
-      for i = 2, #data - 1 do -- first and last elements are always "attrs" and ""
-        t[#t + 1] = {
-          label = vim.trim(data[i]:sub(trunc)),
-          kind = opts and opts.kind or completionKind,
-          cmp = opts and opts.cmp or nil,
-        }
-      end
-      return callback(t)
-    end,
-  })
+    text = true,
+  }, function(obj)
+    if not obj.stdout then return callback() end
+
+    local data = vim.split(obj.stdout, '\n')
+
+    -- first and last elements are always "attrs" and ""
+    if #data < 3 then return callback() end
+    table.remove(data, 1)
+    table.remove(data, #data)
+
+    callback(vim.tbl_map(function(v)
+      return {
+        label = vim.trim(v:sub(trunc)),
+        kind = opts and opts.kind or completionKind,
+        cmp = opts and opts.cmp or nil,
+      }
+    end, data))
+  end)
 end
 
 M.get_metadata = function(query, completion_item, callback)
