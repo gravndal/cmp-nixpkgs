@@ -26,71 +26,59 @@ M.get_completions = function(query, callback, trunc, opts)
 end
 
 M.get_metadata = function(query, completion_item, callback)
-  vim.fn.jobstart({
+  vim.system({
     'nix',
     'eval',
     '--read-only',
     '--json',
     query .. '.meta',
-  }, {
-    stdout_buffered = true,
-    stderr_buffered = true,
-
-    on_stdout = function(_, meta)
-      meta = table.concat(meta, '\n')
-      if #meta == 0 then return end
-      meta = vim.json.decode(meta)
-      local t = {
-        meta.description and vim.trim(meta.description) .. '\n' or '',
-        meta.longDescription and vim.trim(meta.longDescription) .. '\n' or '',
-        meta.name and 'NAME: ' .. vim.trim(meta.name) or '',
-        meta.broken and 'NOTE: Marked as broken' or '',
-        meta.insecure and 'WARN: Marked as insecure' or '',
-      }
-      local licenses = meta.license
-          and ({ meta.license.fullName } or vim.tbl_map(function(e)
-            return e.fullName
-          end, meta.license))
-        or {}
-      for _, l in ipairs(licenses) do
-        t[#t + 1] = 'LICENSE: ' .. l
-      end
-      completion_item.detail = table.concat(
-        vim.tbl_filter(function(e)
-          return e and e ~= ''
-        end, t),
-        '\n'
-      )
-      if callback then
-        callback(completion_item)
-        callback = nil
-      end
-    end,
-
-    on_stderr = function(_, meta)
-      meta = vim.tbl_filter(function(err)
-        return not err:match([[^error %(ignored%)]])
-      end, meta)
-      meta = table.concat(meta, '\n')
-      if #meta == 0 then return end
+  }, { text = true }, function(obj)
+    if obj.stderr and obj.stderr ~= '' then
+      local err = obj.stderr:gsub([[^error %(ignored%).-$]], '')
 
       if
-        not meta:match([[^error: flake %S+ does not provide attribute]])
-        and not meta:match([[^error: %S+ is not an attribute set]])
-        and not meta:match([[^error: cannot convert a function to JSON]])
+        err ~= ''
+        and not err:match([[^error: flake %S+ does not provide attribute]])
+        and not err:match([[^error: %S+ is not an attribute set]])
+        and not err:match([[^error: cannot convert a function to JSON]])
       then
-        completion_item.detail = meta
+        return callback(
+          vim.tbl_extend('error', completion_item, { detail = err })
+        )
       end
-      if callback then
-        callback(completion_item)
-        callback = nil
-      end
-    end,
+    end
 
-    on_exit = function()
-      if callback then callback(completion_item) end
-    end,
-  })
+    if not obj.stdout or obj.stdout == '' then
+      return callback(completion_item)
+    end
+
+    local out = vim.json.decode(obj.stdout)
+
+    local t = {
+      out.description and vim.trim(out.description) .. '\n' or '',
+      out.longDescription and vim.trim(out.longDescription) .. '\n' or '',
+      out.name and 'NAME: ' .. vim.trim(out.name) or '',
+      out.broken and 'NOTE: Marked as broken' or '',
+      out.insecure and 'WARN: Marked as insecure' or '',
+    }
+
+    local licenses = out.license
+        and ({ out.license.fullName } or vim.tbl_map(function(e)
+          return e.fullName
+        end, out.license))
+      or {}
+    for _, l in ipairs(licenses) do
+      t[#t + 1] = 'LICENSE: ' .. l
+    end
+
+    t = vim.tbl_filter(function(e)
+      return e and e ~= ''
+    end, t)
+
+    callback(vim.tbl_extend('error', completion_item, {
+      detail = table.concat(t, '\n'),
+    }))
+  end)
 end
 
 return M
