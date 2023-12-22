@@ -62,13 +62,19 @@ M.get_metadata = function(query, completion_item, callback)
       out.insecure and 'WARN: Marked as insecure' or '',
     }
 
-    local licenses = out.license
-        and ({ out.license.fullName } or vim.tbl_map(function(e)
-          return e.fullName
-        end, out.license))
-      or {}
-    for _, l in ipairs(licenses) do
-      t[#t + 1] = 'LICENSE: ' .. l
+    if out.license then
+      local function parse(license)
+        if license.fullName then
+          return table.insert(t, 'LICENSE: ' .. license.fullName)
+        end
+        if type(license[1]) == 'string' then
+          return table.insert(t, 'LICENSE: ' .. vim.inspect(license))
+        end
+        for _, l in ipairs(license) do
+          parse(l)
+        end
+      end
+      parse(out.license)
     end
 
     t = vim.tbl_filter(function(e)
