@@ -55,11 +55,11 @@ M.get_metadata = function(query, completion_item, callback)
     local out = vim.json.decode(obj.stdout)
 
     local t = {
-      out.description and vim.trim(out.description) .. '\n' or '',
-      out.longDescription and vim.trim(out.longDescription) .. '\n' or '',
-      out.name and 'NAME: ' .. vim.trim(out.name) or '',
-      out.broken and 'NOTE: Marked as broken' or '',
-      out.insecure and 'WARN: Marked as insecure' or '',
+      out.description and vim.trim(out.description) .. '\n',
+      out.longDescription and vim.trim(out.longDescription) .. '\n',
+      out.name and 'NAME: ' .. vim.trim(out.name),
+      out.broken and 'NOTE: Marked as broken',
+      out.insecure and 'WARN: Marked as insecure',
     }
 
     if out.license then
