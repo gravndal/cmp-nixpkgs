@@ -50,6 +50,7 @@ local function get_context(type, depth)
   return context or ''
 end
 
+-- TODO: refactor
 nixpkgs.complete = function(self, request, callback)
   local tokens = vim.split(request.context.cursor_before_line, '%s+')
   local last_token = tokens[#tokens]:gsub('^[%(%[{]+', '')
