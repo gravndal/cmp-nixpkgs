@@ -6,7 +6,7 @@ local completionKind = require('cmp.types.lsp').CompletionItemKind.Module
 
 local nixos = {}
 local hostname = vim.fn.hostname()
-local modulesPrefixLen = 34 + hostname:len()
+local modulesPrefixLen = 35 + hostname:len()
 local nixosConfigPath = vim.fn.resolve('/etc/nixos/')
 local manix = require('cmp_nixpkgs.utils.manix')
 
@@ -59,7 +59,7 @@ nixos.complete = function(self, request, callback)
   local last_token = (self.context .. tokens[#tokens]:gsub('^[%(%[{]+', ''))
   local prefixLen = #self.context + modulesPrefixLen
   require('cmp_nixpkgs.utils.nix').get_completions(
-    table.concat({ 'self#nixosConfigurations', hostname, 'config', last_token, }, '.'),
+    table.concat({ 'self#nixosConfigurations', hostname, 'options', last_token, }, '.'),
     callback, prefixLen, { kind = completionKind }
   )
 end
