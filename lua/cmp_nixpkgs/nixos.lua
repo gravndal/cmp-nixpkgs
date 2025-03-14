@@ -32,7 +32,7 @@ nixos.get_trigger_characters = function()
 end
 
 local function get_context(abort)
-  local node = require('nvim-treesitter.ts_utils').get_node_at_cursor()
+  local node = vim.treesitter.get_node()
   if not node then return '' end
   local context = ''
   while node do

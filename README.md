@@ -19,8 +19,6 @@ The suggestions are attribute paths found under `config`[^1], as a consequence, 
 
 If `manix` is in `PATH`, then it will be used to resolve documentation for `lib` and NixOS modules.
 
-Depends on https://github.com/nvim-treesitter/nvim-treesitter.
-
 [^1]: More accurately `self#nixosConfigurations.$hostname.config`.
 [^overlay]: To take effect, this must be set before the `nixpkgs` source is initialised.
 [^howisthisdifferentfromnixpkgsconfig]: There is some overlap between the `nixos` source and the `config` completion from `nixpkgs`, however there is a significant difference in that the two sources don't use the same tree-sitter context.
