@@ -1,9 +1,12 @@
 local M = {}
 
-if vim.fn.executable('manix') ~= 0 and vim.fn.executable('pwait') ~= 0 then
+local pidwait =
+  vim.split(vim.system({ 'which', 'pidwait', 'pwait' }):wait().stdout, '\n')[1]
+
+if vim.fn.executable('manix') ~= 0 and pidwait and pidwait ~= '' then
   -- wait on running instances of manix before calling function
   local function pwait(fn)
-    vim.system({ 'pwait', '--exact', 'manix' }, {}, fn)
+    vim.system({ pidwait, '--exact', 'manix' }, {}, fn)
   end
 
   -- precache on startup if possible
